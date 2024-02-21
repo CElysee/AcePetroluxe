@@ -19,6 +19,8 @@ router = APIRouter(
     prefix="/vendor"
 )
 
+UPLOAD_FOLDER = "vendorLogo"
+
 
 @router.get("/all")
 async def list_all(db: db_dependency):
@@ -26,18 +28,44 @@ async def list_all(db: db_dependency):
     return vendor
 
 
+@router.get("/count")
+async def vendor_count(db: db_dependency):
+    vendor = db.query(Vendors).count()
+    active_vendor = db.query(Vendors).filter(Vendors.vendor_status == "Active").count()
+    recently_added_vendor = db.query(Vendors).filter(Vendors.created_at >= datetime.now() - timedelta(days=30)).count()
+    return {"vendor_count": vendor, "active_vendor": active_vendor, "recently_added_vendor": recently_added_vendor}
+
+
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_vendor(vendor_request: VendorCreate, db: Session = Depends(get_db)):
-    check_vendor = db.query(Vendors).filter(Vendors.vendor_name == vendor_request.vendor_name).first()
+async def create_vendor(
+        db: Session = Depends(get_db),
+        # vendor_request: VendorCreate = Depends(),
+        vendor_logo: UploadFile = File(...),
+        vendor_name: str = Form(...),
+        vendor_address: str = Form(...),
+        vendor_contact_number: str = Form(...),
+        vendor_email: str = Form(...),
+        vendor_status: str = Form(...),
+        vendor_country: int = Form(...)
+):
+    check_vendor = db.query(Vendors).filter(Vendors.vendor_name == vendor_name).first()
     if check_vendor:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Vendor already exists")
 
+    # Upload logo to the server
+    file_handler = FileHandler(upload_folder=UPLOAD_FOLDER)
+
+    # Use the file_handler to save an uploaded file
+    saved_filename = file_handler.save_uploaded_file(vendor_logo)
+
     vendor = Vendors(
-        vendor_name=vendor_request.vendor_name,
-        vendor_address=vendor_request.vendor_address,
-        vendor_contact_number=vendor_request.vendor_contact_number,
-        vendor_email=vendor_request.vendor_email,
-        vendor_status=vendor_request.vendor_status,
+        vendor_name=vendor_name,
+        vendor_address=vendor_address,
+        vendor_contact_number=vendor_contact_number,
+        vendor_email=vendor_email,
+        vendor_status=vendor_status,
+        vendor_country=vendor_country,
+        vendor_logo=saved_filename,
         created_at=datetime.now()
     )
     db.add(vendor)

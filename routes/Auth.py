@@ -52,6 +52,12 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    # Add other fields as needed
+
+
 def get_user_exception():
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -197,16 +203,34 @@ def user_by_email(email, db):
     return user
 
 
+def user_exist(email, db):
+    user = db.query(models.User).filter(models.User.email == email).first()
+    if user:
+        return True
+    else:
+        return False
+
+
 @router.get('/all', response_model=List[schemas.UserOut])
-async def all_users(db: db_dependency):
-    # all_users = db.query(models.User).all()
+async def all_users(db: Session = Depends(get_db)):
     users = db.query(models.User).order_by(models.User.id.desc()).all()
     return users
 
 
-@router.post("/users/create", status_code=status.HTTP_201_CREATED)
+@router.get("/usersCount")
+async def get_users_count(db: Session = Depends(get_db)):
+    count_users = db.query(models.User).count()
+    count_users_active = db.query(models.User).filter(models.User.is_active == True).count()
+    count_users_loggedin = db.query(models.User).filter(models.User.last_login != None).count()
+    count_new_users = db.query(models.User).filter(
+        models.User.created_at >= datetime.now() - timedelta(days=30)).count()
+    return {"total_users": count_users, "active_users": count_users_active, "logged_in_users": count_users_loggedin,
+            "new_users": count_new_users}
+
+
+@router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_user(db: Session = Depends(get_db), user_request: schemas.UserCreate = Depends()):
-    check_user = user_by_email(user_request.email, db)
+    check_user = user_exist(user_request.email, db)
     if check_user:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Email already exist")
     try:

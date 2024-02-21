@@ -38,6 +38,8 @@ class Country(Base):
     updated_at = Column(DateTime)
 
     user = relationship("User", back_populates="country")
+    vendors = relationship("Vendors", back_populates="country")
+    customers = relationship("Customer", back_populates="country")
 
 
 class Vendors(Base):
@@ -49,8 +51,12 @@ class Vendors(Base):
     vendor_contact_number = Column(String(50))
     vendor_email = Column(String(50))
     vendor_status = Column(String(50))
+    vendor_country = Column(Integer, ForeignKey("countries.id"))
+    vendor_logo = Column(String(50))
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
+
+    country = relationship("Country", back_populates="vendors")
 
 
 class Customer(Base):
@@ -63,5 +69,8 @@ class Customer(Base):
     customer_phone_number = Column(String(50))
     customer_address = Column(String(50))
     customer_status = Column(String(50))
+    customer_country = Column(Integer, ForeignKey("countries.id"))
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
+
+    country = relationship("Country", back_populates="customers")

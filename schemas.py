@@ -6,14 +6,14 @@ from pydantic import BaseModel, EmailStr
 
 class UserCreate(BaseModel):
     email: EmailStr
-    username: Optional[EmailStr]
+    username: Optional[EmailStr] = None
     phone_number: str
     first_name: str
     last_name: str
     password: str
     gender: str
     country_id: Optional[int]
-    is_active: Optional[bool] = True
+    is_active: Optional[bool] = None
     role: str
 
 
@@ -28,7 +28,7 @@ class UserOut(BaseModel):
     role: str
     is_active: bool
     created_at: datetime
-    last_login: datetime
+    last_login: Optional[datetime] = None
     updated_at: datetime
 
 
@@ -46,7 +46,9 @@ class VendorCreate(BaseModel):
     vendor_contact_number: str
     vendor_email: str
     vendor_status: str
-    created_at: datetime
+    vendor_country: int
+    # vendor_logo: str
+    created_at: Optional[datetime] = None
 
 
 class VendorUpdate(BaseModel):
@@ -55,6 +57,8 @@ class VendorUpdate(BaseModel):
     vendor_contact_number: Optional[str] = None
     vendor_email: Optional[str] = None
     vendor_status: Optional[str] = None
+    vendor_country: Optional[int] = None
+    vendor_logo: Optional[str] = None
     updated_at: Optional[datetime] = None
 
 
@@ -65,7 +69,8 @@ class CustomerCreate(BaseModel):
     customer_phone_number: str
     customer_address: str
     customer_status: str
-    created_at: datetime
+    customer_country: int
+    created_at: Optional[datetime] = None
 
 
 class CustomerUpdate(BaseModel):
@@ -75,4 +80,5 @@ class CustomerUpdate(BaseModel):
     customer_phone_number: Optional[str] = None
     customer_address: Optional[str] = None
     customer_status: Optional[str] = None
+    customer_country: Optional[str] = None
     updated_at: Optional[datetime] = None
