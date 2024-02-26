@@ -6,7 +6,7 @@ import os
 from cachetools import TTLCache
 import models
 from database import engine, db_dependency
-from routes import (Auth, Vendors, Customer, Country)
+from routes import (Auth, Vendors, Customer, Country, PurchaseOrder)
 from routes.Auth import get_current_user, user_dependency
 
 app = FastAPI()
@@ -29,6 +29,7 @@ app.include_router(Auth.router)
 app.include_router(Country.router)
 app.include_router(Vendors.router)
 app.include_router(Customer.router)
+app.include_router(PurchaseOrder.router)
 
 app.mount("/vendorLogo", StaticFiles(directory="vendorLogo"), name="images")
 # Your cache instance, replace with your specific cache implementation

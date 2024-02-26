@@ -90,6 +90,7 @@ async def update_customer(customer_id: int, customer_request: CustomerUpdate, db
     customer.updated_at = datetime.now()
     db.commit()
     db.refresh(customer)
+
     return {"message": "Customer updated successfully", "data": customer}
 
 

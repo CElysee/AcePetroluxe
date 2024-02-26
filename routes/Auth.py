@@ -303,7 +303,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
 
 # User info by id
-@router.get("/users/{user_id}")
+@router.get("/{user_id}")
 async def get_user(user_id: int, db: db_dependency):
     user = get_user_by_id(user_id, db)
     country = user.country
@@ -318,7 +318,9 @@ async def get_user(user_id: int, db: db_dependency):
         "username": user.username,
         "role": user.role,
         "gender": user.gender,
+        "country_id": user.country_id,
         "country": country,
+        "is_active": user.is_active,
     }
     return data
 
@@ -345,7 +347,7 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     return current_user
 
 
-@router.put("/users/update", status_code=status.HTTP_200_OK)
+@router.put("/update", status_code=status.HTTP_200_OK)
 async def update_profile(
         first_name: str = Form(None),
         last_name: str = Form(None),
@@ -412,3 +414,13 @@ async def update_password(
             return {"message": "Password updated successfully"}
     else:
         raise HTTPException(status_code=400, detail="Old password is incorrect")
+
+
+@router.delete("/delete")
+async def delete_user(user_id: int, db: db_dependency):
+    user = get_user_by_id(user_id, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return {"message": "User deleted successfully"}

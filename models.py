@@ -57,6 +57,7 @@ class Vendors(Base):
     updated_at = Column(DateTime)
 
     country = relationship("Country", back_populates="vendors")
+    purchase_order = relationship("PurchaseOrder", back_populates="vendor")
 
 
 class Customer(Base):
@@ -74,3 +75,35 @@ class Customer(Base):
     updated_at = Column(DateTime)
 
     country = relationship("Country", back_populates="customers")
+    purchase_order = relationship("PurchaseOrder", back_populates="customer")
+
+
+class PurchaseOrder(Base):
+    __tablename__ = "purchase_order"
+
+    id = Column(Integer, primary_key=True, index=True)
+    po_number = Column(String(50))
+    po_status = Column(String(50))
+    po_vendor_id = Column(Integer, ForeignKey("vendors.id"))
+    po_customer_id = Column(Integer, ForeignKey("customers.id"))
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+
+    vendor = relationship("Vendors", back_populates="purchase_order")
+    customer = relationship("Customer", back_populates="purchase_order")
+    purchase_order_items = relationship("PurchaseOrderItems", back_populates="purchase_order")
+
+
+class PurchaseOrderItems(Base):
+    __tablename__ = "purchase_order_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    po_id = Column(Integer, ForeignKey("purchase_order.id"))
+    po_item_description = Column(String(50))
+    po_item_quantity = Column(Integer)
+    po_item_unit_price = Column(Integer)
+    po_item_total_price = Column(Integer)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+
+    purchase_order = relationship("PurchaseOrder", back_populates="purchase_order_items")

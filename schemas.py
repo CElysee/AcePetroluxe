@@ -80,5 +80,21 @@ class CustomerUpdate(BaseModel):
     customer_phone_number: Optional[str] = None
     customer_address: Optional[str] = None
     customer_status: Optional[str] = None
-    customer_country: Optional[str] = None
+    customer_country: Optional[int] = None
     updated_at: Optional[datetime] = None
+
+
+class PurchaseOrderItem(BaseModel):
+    po_item_description: str
+    po_item_quantity: str
+    po_item_unit_price: str
+    po_item_total_price: str
+
+
+class PurchaseOrderCreate(BaseModel):
+    po_number: Optional[str] = None
+    po_status: Optional[str] = None
+    po_vendor_id: str
+    po_customer_id: str
+    created_at: Optional[datetime] = None
+    itemList: List[PurchaseOrderItem]

@@ -100,7 +100,7 @@ async def update_vendor(vendor_id: int, vendor_request: VendorUpdate, db: Sessio
     vendor.updated_at = datetime.now()
     db.commit()
     db.refresh(vendor)
-    return vendor
+    return {"message": "Vendor updated successfully", "data": vendor}
 
 
 @router.delete("/delete")
