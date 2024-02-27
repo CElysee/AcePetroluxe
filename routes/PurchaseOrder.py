@@ -36,19 +36,19 @@ async def get_purchase_order(db: db_dependency):
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_purchase_order(
         purchase_order_request: PurchaseOrderCreate, db: db_dependency):
-    check_purchase_order = db.query(PurchaseOrder).filter(
-        PurchaseOrder.po_number == purchase_order_request.po_number).first()
-    order_number = 0
-    if check_purchase_order is None:
-        order_number += 1
-    else:
-        order_number = int(check_purchase_order.po_number) + 1
 
+    check_purchase_order = db.query(PurchaseOrder).all()
+    if check_purchase_order:
+        last_record = check_purchase_order[-1]
+        order_number = int(last_record.po_number) + 1
+    else:
+        order_number = 1
     purchase_order = PurchaseOrder(
         po_vendor_id=purchase_order_request.po_vendor_id,
         po_customer_id=purchase_order_request.po_customer_id,
         po_status=purchase_order_request.po_status,
-        po_number=str(order_number),  # Convert order_number to string here
+        po_number=str(order_number),
+        po_additional_notes=purchase_order_request.po_additional_notes,
         created_at=datetime.now()
     )
     db.add(purchase_order)
@@ -81,7 +81,18 @@ async def update_purchase_order(id: int, db: db_dependency):
     vendor = db.query(Vendors).filter(Vendors.id == purchase_order.po_vendor_id).first()
     customer = db.query(Customer).filter(Customer.id == purchase_order.po_customer_id).first()
     items = db.query(PurchaseOrderItems).filter(PurchaseOrderItems.po_id == purchase_order.id).all()
-    orders.append({"order": purchase_order, "vendor": vendor, "customer": customer, "items": items})
+    item_quantity_total = (
+        db.query(func.sum(PurchaseOrderItems.po_item_quantity))
+        .filter(PurchaseOrderItems.id == id)
+        .scalar()  # Use .scalar() to retrieve the result directly
+    )
+    item_total_price = (
+        db.query(func.sum(PurchaseOrderItems.po_item_total_price))
+        .filter(PurchaseOrderItems.id == id)
+        .scalar()  # Use .scalar() to retrieve the result directly
+    )
+    orders.append({"order": purchase_order, "vendor": vendor, "customer": customer, "items": items, "item_quantity_total": item_quantity_total, "item_total_price": item_total_price})
+
     return orders
 
 

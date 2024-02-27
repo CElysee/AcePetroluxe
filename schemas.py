@@ -96,5 +96,6 @@ class PurchaseOrderCreate(BaseModel):
     po_status: Optional[str] = None
     po_vendor_id: str
     po_customer_id: str
+    po_additional_notes: Optional[str] = None
     created_at: Optional[datetime] = None
     itemList: List[PurchaseOrderItem]
